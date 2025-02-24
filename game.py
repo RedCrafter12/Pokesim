@@ -1,35 +1,50 @@
 import requests as req
 import json
+import pickle
+import os
+import klassen
+from klassen import Trainer,Pokemon
  
 base_url = 'https://pokeapi.co/api/v2/'
 
-def holdirec(z):
-	return json.loads(req.get(z).text)
- 
-def holsim(z):
-    return json.loads(req.get(base_url + z).text)
- 
-poke = holsim('pokemon/pikachu')
-print(poke['types'][0]['type']['name'].title())
-NAME = input('Wie lautet dein Name.-->')
-print('Ein wildes ' + poke['name'].title() + ' erscheint!')
-while(1>0):
-    print('Was wird ' + NAME + ' tun')
+poke = Pokemon('pikachu',5)
+poke1 = Pokemon('charmander',10)
+poke2 = Pokemon(input('Waehle ein Pokemon-->'),5)
+player = Trainer([poke2,poke,poke1],input('Wie lautet dein Name.-->'))
+geg = Pokemon('pikachu',5)
+print(poke.typ1.title())
+print('Ein wildes ' + geg.name.title() + ' erscheint!')
+while(True):
+    aktpk = player.pokemon[0]
+    print(f"{geg.hp} HP")
+    print('Was wird ' + player.name + ' tun')
     print('1. Kampf 2.Pokemon 3.Beutel 4.Flucht')
     a = input()
     if(a == 'debug'):
-        print(poke)
-        print(poke['stats'])
-        for i in poke:
-        	print(i)
-        print(poke['moves'])
-    if(a == '1'):
+        print(aktpk)
+        print(aktpk.moveset)
+    elif(a == '1'):
     	o = 0
     	wählbar = []
-    	for move in poke['moves']:
-    		if(move['version_group_details'][0]['level_learned_at'] <= 20 & o < 4):
+    	for move in aktpk.moveset:
+    		if(o < 4):
     			wählbar.append(move)
     			o = o + 1
     			print(str(o) + '. ' + move['move']['name'])
-    	ack = holdirec(wählbar[int(input()) - 1]['move']['url'])
+    	ack = klassen.holmove(wählbar[i := int(input()) - 1]['move']['url'],wählbar[i]['move']['name'])
     	print(ack['name'])
+    	try:
+    		geg.hp -= ack['power']
+    	except:
+    		pass
+    elif(a == '2'):
+    	print(player)
+    	a , b = 0 , int(input('Welches Pokemon?')) - 1
+    	player.pokemon[a] , player.pokemon[b] = player.pokemon[b] , player.pokemon[a]
+    elif(a == '3'):
+    	print(player.bag)
+    elif(a == '4'):
+    	print('Du bist geflohen!')
+    	exit()
+    else:
+    	print('Unbekannte Eingabe')
