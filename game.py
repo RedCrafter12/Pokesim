@@ -45,6 +45,7 @@ while(True):
     		geg.hp -= ack['power']
     	except:
     		pass
+	check()
     elif(a == '2'):
     	print(player)
     	a , b = 0 , int(input('Welches Pokemon?')) - 1
