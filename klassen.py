@@ -1,3 +1,4 @@
+import requests as req
 import json
 import pickle
 import os
@@ -39,6 +40,7 @@ class Pokemon:
 		except:
 			pass
 
+base_url = 'https://pokeapi.co/api/v2/'
 
 
 def holmove(url,name):        #WIP
