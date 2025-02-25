@@ -4,8 +4,7 @@ import pickle
 import os
 import klassen
 from klassen import Trainer,Pokemon
- 
-base_url = 'https://pokeapi.co/api/v2/'
+
 
 def check(p,g):
 	if(p.hp <= 0):
@@ -14,6 +13,7 @@ def check(p,g):
 	elif(g.hp <= 0):
 		print('Du hast gewonnen!')
 		exit()
+	
 
 poke = Pokemon('pikachu',5)
 poke1 = Pokemon('charmander',10)
@@ -45,7 +45,7 @@ while(True):
     		geg.hp -= ack['power']
     	except:
     		pass
-	check()
+    	check(aktpk,geg)
     elif(a == '2'):
     	print(player)
     	a , b = 0 , int(input('Welches Pokemon?')) - 1
