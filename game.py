@@ -20,12 +20,12 @@ poke1 = Pokemon('charmander',10)
 poke2 = Pokemon(input('Waehle ein Pokemon-->'),5)
 player = Trainer([poke2,poke,poke1],input('Wie lautet dein Name.-->'))
 geg = Pokemon('pikachu',5)
-print(poke.typ1.title())
-print('Ein wildes ' + geg.name.title() + ' erscheint!')
+print(poke.typ1.name.title())
+print(f'Ein wildes {geg.name.title()} erscheint!')
 while(True):
     aktpk = player.pokemon[0]
     print(f"{geg.hp} HP")
-    print('Was wird ' + player.name + ' tun')
+    print(f'Was wird {player.name} tun')
     print('1. Kampf 2.Pokemon 3.Beutel 4.Flucht')
     a = input()
     if(a == 'debug'):
