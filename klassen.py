@@ -1,7 +1,10 @@
-import requests as req
 import json
 import pickle
 import os
+import requests as req
+import formulas
+
+base_url = 'https://pokeapi.co/api/v2/'
 
 class Trainer:
      
@@ -21,7 +24,11 @@ class Trainer:
             temp += str(o) + '. ' + p.name.title() + ' '
             print(temp)
         return temp
-    
+
+class Typ:
+	def __init__(self,typi):
+		self.name = typi['name']
+		self.effec = typi['damage_relations']
 
 class Pokemon:
 	hp = 1
@@ -33,14 +40,15 @@ class Pokemon:
 		self.name = poke['name']
 		self.moveset = poke['moves']
 		self.level = level
-		self.hp = poke['stats'][0]['base_stat']
-		self.typ1 = poke['types'][0]['type']['name']
+		for stat in poke['stats']:
+			if stat['stat']['name'] == 'hp':
+				self.hp = formulas.hp_calc(stat['base_stat'],24 , 74 , 78)
+		self.typ1 = Typ(holmove(poke['types'][0]['type']['url'],poke['types'][0]['type']['name']))
 		try:
-			self.typ2 = poke['types'][1]['type']['name']
+			self.typ2 = Typ(holmove(poke['types'][1]['type']['url'],poke['types'][1]['type']['name']))
 		except:
 			pass
-
-base_url = 'https://pokeapi.co/api/v2/'
+		print(self.typ1.name)
 
 
 def holmove(url,name):        #WIP
@@ -57,9 +65,8 @@ def holmove(url,name):        #WIP
 	return x
 
 def holdirec(z):
-	print(z.rsplit('/', 1)[-2])
-	if os.path.exists(z.rsplit('/', 1)[-1]):
-	    datei = open(z.rsplit('/', 1)[-1],'rb')
+	if os.path.exists(z.rsplit('/', 1)[1]):
+	    datei = open(z.rsplit('/', 1)[1],'rb')
 	    x = pickle.load(datei)
 	    datei.close()
 	    print('Supiii')
