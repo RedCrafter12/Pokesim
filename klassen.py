@@ -2,91 +2,101 @@ import json
 import pickle
 import os
 import requests as req
-import formulas
 
 base_url = 'https://pokeapi.co/api/v2/'
+cache_dir = 'cache'
+
+# ensure cache directory exists
+os.makedirs(cache_dir, exist_ok=True)
+
+def _cache_filename(resource_type: str, name: str) -> str:
+    safe_name = name.replace('/', '_')
+    return os.path.join(cache_dir, f"{resource_type}_{safe_name}.pkl")
+
 
 class Trainer:
-     
-    def __init__(self,poke,name):
-    	self.pokemon = []
-    	for p in poke:
-    		self.pokemon.append(p)
-    		self.name = name
-    		#Hier Trank zu Bag hinzufügen
-    
-    
+    def __init__(self, poke_list, name):
+        self.pokemon = []
+        for p in poke_list:
+            self.pokemon.append(p)
+        self.name = name
+        self.bag = {}  # placeholder for items (e.g., potions)
+
     def __str__(self):
-        o = 0
         temp = ''
-        for p in self.pokemon:
-            o += 1
-            temp += str(o) + '. ' + p.name.title() + ' '
-            print(temp)
+        for i, p in enumerate(self.pokemon, start=1):
+            temp += f"{i}. {p.name.title()} "
         return temp
 
-class Typ:
-	def __init__(self,typi):
-		self.name = typi['name']
-		self.effec = typi['damage_relations']
 
 class Pokemon:
-	hp = 1
-	level = 5
-	
-	
-	def __init__(self,nam,level):
-		poke = holsim('pokemon/',nam)
-		self.name = poke['name']
-		self.moveset = poke['moves']
-		self.level = level
-		for stat in poke['stats']:
-			if stat['stat']['name'] == 'hp':
-				self.hp = formulas.hp_calc(stat['base_stat'],24 , 74 , 78)
-		self.typ1 = Typ(holmove(poke['types'][0]['type']['url'],poke['types'][0]['type']['name']))
-		try:
-			self.typ2 = Typ(holmove(poke['types'][1]['type']['url'],poke['types'][1]['type']['name']))
-		except:
-			pass
-		print(self.typ1.name)
+    def __init__(self, nam, level):
+        poke = holsim('pokemon/', nam)
+        self.name = poke.get('name', nam)
+        self.moveset = poke.get('moves', [])
+        self.level = level
+        # stats: find HP, attack, defense by name
+        stats = {s.get('stat', {}).get('name'): s.get('base_stat') for s in poke.get('stats', [])}
+        self.hp = stats.get('hp', 1)
+        self.attack = stats.get('attack', max(1, level * 5))
+        self.defense = stats.get('defense', max(1, level * 5))
+        types = poke.get('types', [])
+        if len(types) > 0:
+            self.typ1 = types[0]['type']['name']
+        else:
+            self.typ1 = None
+        if len(types) > 1:
+            self.typ2 = types[1]['type']['name']
+        else:
+            self.typ2 = None
 
 
-def holmove(url,name):        #WIP
-	if os.path.exists(name):
-	    datei = open(name,'rb')
-	    x = pickle.load(datei)
-	    datei.close()
-	    print('Supiii')
-	else:
-	    x = json.loads(req.get(url).text)
-	    datei = open(x['name'],'ab')
-	    pickle.dump(x,datei)
-	    datei.close()
-	return x
+def holmove(url, name):
+    """
+    Fetch move details using cache (cache/move_{name}.pkl) or from given URL.
+    """
+    filename = _cache_filename('move', name)
+    if os.path.exists(filename):
+        with open(filename, 'rb') as datei:
+            x = pickle.load(datei)
+    else:
+        r = req.get(url)
+        r.raise_for_status()
+        x = r.json()
+        with open(filename, 'wb') as datei:
+            pickle.dump(x, datei)
+    return x
+
 
 def holdirec(z):
-	if os.path.exists(z.rsplit('/', 1)[1]):
-	    datei = open(z.rsplit('/', 1)[1],'rb')
-	    x = pickle.load(datei)
-	    datei.close()
-	    print('Supiii')
-	else:
-		x = json.loads(req.get(z).text)
-		datei = open(x['name'],'ab')
-		pickle.dump(x, datei)
-		datei.close()
-		print('Ohh')
-	return x
- 
-def holsim(z,n):
-    if os.path.exists(n):
-    	datei = open(n,'rb')
-    	x = pickle.load(datei)
-    	datei.close()
-    	print('Supiii')
+    # take last part of URL as a name
+    name = z.rsplit('/', 1)[-1] or 'resource'
+    filename = _cache_filename('resource', name)
+    if os.path.exists(filename):
+        with open(filename, 'rb') as datei:
+            x = pickle.load(datei)
     else:
-    	x = json.loads(req.get(base_url + z + n).text)
-    	datei = open(x['name'],'ab')
-    	pickle.dump(x,datei)
-    	datei.close()
+        r = req.get(z)
+        r.raise_for_status()
+        x = r.json()
+        with open(filename, 'wb') as datei:
+            pickle.dump(x, datei)
+    return x
+
+
+def holsim(z, n):
+    """
+    Fetch a resource from the API path base_url + z + n, or load from cache file in cache/.
+    """
+    resource_type = z.rstrip('/').replace('/', '_')
+    filename = _cache_filename(resource_type, n)
+    if os.path.exists(filename):
+        with open(filename, 'rb') as datei:
+            x = pickle.load(datei)
+    else:
+        r = req.get(base_url + z + n)
+        r.raise_for_status()
+        x = r.json()
+        with open(filename, 'wb') as datei:
+            pickle.dump(x, datei)
     return x
