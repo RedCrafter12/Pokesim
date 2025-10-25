@@ -10,12 +10,12 @@ This branch (fixes-improvements) contains bugfixes and improvements:
 - Safer caching of API responses (uses 'wb' for pickle writes).
 - Improved game loop: input validation, clearer error messages, safer move handling, a usable potion item.
 
-```markdown
 Requirements
 - Python 3.8+
 - Install dependencies:
+  ``` markdown
   pip install -r requirements.txt
-```
+  ```
 
 How to run
 ```markdown
